@@ -1,0 +1,177 @@
+server:
+  port: ":8081"
+
+newrelic:
+  enabled: true
+  appName: "Warehouse Management Service Staging"
+  licence: "<-------------------------------------->"
+  distributedTracer: true
+
+wmsService:
+  baseUrl: "http://tenantapi.omnifulinfra.com"
+  timeout: 5
+
+env: "staging"
+
+log:
+  level: "debug"
+  format: "json"
+  request: true
+  response: true
+  request_debug: true
+
+service:
+  name: "wms_service"
+
+redis:
+  clusterMode: false
+  hosts: "127.0.0.1:7005"
+  db: 1
+
+postgresql:
+  debugMode: true
+  database: "wms_service_db"
+  maxOpenConns: 10
+  maxIdleConns: 2
+  master:
+    host: "127.0.0.1"
+    port: "5432"
+    username: "postgres"
+    password: "Pyari@123"
+  slaves:
+    hosts: "127.0.0.1"
+    port: "5432"
+    username: "postgres"
+    password: "Pyari@123"
+
+worker:
+  createUser:
+    name: "local-tenant-service-create-user"
+    workerCount: 1
+    region: "eu-central-1"
+    endpoint: "https://sqs.eu-central-1.amazonaws.com/348639420040/staging-tenant-service-create-user"
+    account: "348639420040"
+  locationMapping:
+    name: "staging-tenant-service-location-mapping-events"
+    workerCount: 1
+    region: "eu-central-1"
+    endpoint: "https://sqs.eu-central-1.amazonaws.com/348639420040/local-tenant-service-location-mapping-events"
+    account: "348639420040"
+  redis:
+    name: "local-tenant-service-purge-cache"
+    workerCount: 1
+    region: "eu-central-1"
+    endpoint: "https://sqs.eu-central-1.amazonaws.com/348639420040/local-tenant-service-purge-cache"
+    account: "348639420040"
+    concurrencyPerWorker: 1
+  orderUpdate:
+    name: "local-order-service-update-orders"
+    workerCount: 1
+    region: "eu-central-1"
+    endpoint: "https://sqs.eu-central-1.amazonaws.com/348639420040/local-order-service-update-orders"
+    account: "348639420040"
+  email:
+    name: "email"
+    workerCount: 1
+    region: "eu-central-1"
+    endpoint: "https://sqs.eu-central-1.amazonaws.com/348639420040/email"
+    account: "348639420040"
+    concurrencyPerWorker: 1
+  cities:
+    export:
+      name: "local-tenant-cities-export"
+      workerCount: 1
+      region: "eu-central-1"
+      endpoint: "https://sqs.eu-central-1.amazonaws.com/348639420040/local-tenant-cities-export"
+      account: "348639420040"
+  notification:
+    name: "local-tenant-service-notification"
+    workerCount: 1
+    region: "eu-central-1"
+    endpoint: "https://sqs.eu-central-1.amazonaws.com/348639420040/local-tenant-service-notification"
+    account: "348639420040"
+  city:
+    name: "local-tenant-service-city.fifo"
+    workerCount: 1
+    region: "eu-central-1"
+    endpoint: "https://sqs.eu-central-1.amazonaws.com/348639420040/local-tenant-service-city.fifo"
+    account: "348639420040"
+
+email:
+  region: "eu-central-1"
+
+s3:
+  bucket: "omniful-testing-s3"
+  region: "eu-central-1"
+  ephemeralUploadBucket: "test-s3-bucket"
+
+consumers:
+  tenantCreate:
+    topic: "omniful.tenant-service.tenant.create-events"
+    groupId: "1"
+    enabled: false
+  seller:
+    topic: "omniful.tenant-service.seller.events"
+
+onlineKafka:
+  brokers:
+    - "localhost:9092"
+  clientId: "tenant-service"
+  version: 2.0.0
+
+migration:
+  flag: true
+
+maps:
+  max_active_clients: 100
+  client_idle_timeout: 10m
+
+constants:
+  addressAutofillVerify:
+    unit: "km"
+    allowedDistance: 1
+
+  enableCityAlias: false
+  cities:
+    export:
+      batchSize: 2000
+    import:
+      batchSize: 1000
+
+featureFlag:
+  isInternalGetCityAddressEnabled: true
+  isAddressValidationEnabled: false
+  isCreateHubAddressValidationEnabled: true
+  isUpdateHubAddressValidationEnabled: false
+  skipEnvCheck: false
+  locationMappingFromGoogleEnabled: false
+  geocodeAddressString: true
+
+pusher:
+  channel: "test"
+  eventName: "event"
+  appId: "1639069"
+  key: "key"
+  secret: "secret"
+  cluster: "ap2"
+  events:
+    city:
+      export: "city_export"
+      import: "city_import"
+
+adminDashboard:
+  stagHost: "stagadmin.omniful.com"
+  prodHost: "admin.omniful.com"
+  stagWorkspace: "Staging admin dashboard"
+  prodWorkspace: "Admin dashboard"
+
+secretManager:
+  region: "region"
+  omnifulParameterSecretID: "omniful_parameter_secret_key"
+  cloudTranslationSecretKey: "gcp_cloud_translation_api"
+
+exchangeRateAPIClients:
+  exchangeRateV6:
+    baseURL: "https://v6.exchangerate-api.com/v6/"
+    apiKey: "local-api-key"
+    timeout: 30
