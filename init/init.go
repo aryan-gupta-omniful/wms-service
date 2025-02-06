@@ -4,15 +4,20 @@ import (
 	"context"
 	"time"
 	"wms-service/pkg/db/postgres"
+	"wms-service/pkg/redis"
 
 	"github.com/omniful/go_commons/config"
 	opostgres "github.com/omniful/go_commons/db/sql/postgres"
 	"github.com/omniful/go_commons/log"
+	oredis "github.com/omniful/go_commons/redis"
 )
 
-func Initialize(ctx context.Context) {
+func Initialize(ctx context.Context) *opostgres.DbCluster {
 	initializeLog(ctx)
-	initializeDB(ctx)
+	db := initializeDB(ctx)
+	initializeRedis(ctx)
+	// initializeKafkaProducer(ctx)
+	return db
 }
 
 // Initialize logging
@@ -26,7 +31,7 @@ func initializeLog(ctx context.Context) {
 	}
 }
 
-func initializeDB(ctx context.Context) {
+func initializeDB(ctx context.Context) *opostgres.DbCluster {
 	maxOpenConnections := config.GetInt(ctx, "postgresql.maxOpenConns")
 	maxIdleConnections := config.GetInt(ctx, "postgresql.maxIdleConns")
 
@@ -80,4 +85,31 @@ func initializeDB(ctx context.Context) {
 	db := opostgres.InitializeDBInstance(masterConfig, &slavesConfig)
 	log.InfofWithContext(ctx, "Initialized Postgres DB client")
 	postgres.SetCluster(db)
+	return db
 }
+
+// Initialize Redis
+func initializeRedis(ctx context.Context) {
+	r := oredis.NewClient(&oredis.Config{
+		ClusterMode: config.GetBool(ctx, "redis.clusterMode"),
+		Hosts:       config.GetStringSlice(ctx, "redis.hosts"),
+		DB:          config.GetUint(ctx, "redis.db"),
+	})
+	log.InfofWithContext(ctx, "Initialized Redis Client")
+	redis.SetClient(r)
+}
+
+// Initialize Kafka Producer
+// func initializeKafkaProducer(ctx context.Context) {
+// 	kafkaBrokers := config.GetStringSlice(ctx, "onlineKafka.brokers")
+// 	kafkaClientID := config.GetString(ctx, "onlineKafka.clientId")
+// 	kafkaVersion := config.GetString(ctx, "onlineKafka.version")
+
+// 	producer := kafka.NewProducer(
+// 		kafka.WithBrokers(kafkaBrokers),
+// 		kafka.WithClientID(kafkaClientID),
+// 		kafka.WithKafkaVersion(kafkaVersion),
+// 	)
+// 	log.Printf("Initialized Kafka Producer")
+// 	kafka_producer.Set(producer)
+// }
