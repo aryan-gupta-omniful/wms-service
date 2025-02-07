@@ -20,6 +20,11 @@ func Initialize(ctx context.Context, s *http.Server, db *postgres.DbCluster) err
 	v1 := s.Engine.Group("/api/v1")
 	{
 		// Hubs Routes
+		orders := v1.Group("/orders")
+		{
+			orders.POST("/validate_order", controllers.ValidateHubAndSKU(db))
+		}
+
 		hubs := v1.Group("/hubs")
 		{
 			hubs.GET("", controllers.GetAllHubs(db))
