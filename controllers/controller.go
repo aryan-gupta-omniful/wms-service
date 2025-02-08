@@ -12,8 +12,8 @@ import (
 )
 
 type ValidateOrderRequest struct {
-	SKUID int64 `json:"sku_id"`
-	HubID int64 `json:"hub_id"`
+	SKUID string `json:"sku_id"`
+	HubID string `json:"hub_id"`
 }
 
 func GetHealth(db *postgres.DbCluster) func(ctx *gin.Context) {
