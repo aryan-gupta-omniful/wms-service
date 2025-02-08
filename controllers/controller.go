@@ -11,14 +11,9 @@ import (
 	"github.com/omniful/go_commons/db/sql/postgres"
 )
 
-type ValidateOrderRequest struct {
-	SKUID string `json:"sku_id"`
-	HubID string `json:"hub_id"`
-}
-
 func GetHealth(db *postgres.DbCluster) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
-		fmt.Println("server is workign absolutely fine - OK")
+		fmt.Println("Server is working absolutely fine - OK")
 	}
 }
 
@@ -79,14 +74,6 @@ func CreateHub(db *postgres.DbCluster) func(ctx *gin.Context) {
 	}
 }
 
-/* {
-	"id": 11,
-	"tenant_id": 6,
-	"manager_name": "aryan",
-	"manager_contact": "9876019282",
-	"manager_email": "aryan@email.com"
-} */
-
 func GetAllSKUs(db *postgres.DbCluster) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		var skus []models.SKU
@@ -129,8 +116,6 @@ func CreateSKU(db *postgres.DbCluster) func(ctx *gin.Context) {
 			return
 		}
 
-		// Add any SKU-specific validation here
-		// Example (adjust according to your SKU model requirements):
 		if newSKU.ProductID == 0 {
 			ctx.JSON(400, gin.H{"error": "Product ID is required"})
 			return
@@ -145,22 +130,11 @@ func CreateSKU(db *postgres.DbCluster) func(ctx *gin.Context) {
 	}
 }
 
-type ValidationResponse struct {
-	IsValid bool
-	Error   error
-}
-
 func ValidateHubAndSKU(db *postgres.DbCluster) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		log.Println("ValidateHubAndSKU function called")
-		// ch := make(chan string, 1)
 
-		// http://localhost:8082/api/v1/hubs/:id
-		// http://localhost:8082/api/v1/skus/:id
-
-		var request ValidateOrderRequest
-
-		// Bind JSON request body to struct
+		var request models.ValidateOrderRequest
 		if err := ctx.ShouldBindJSON(&request); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"error":   "Invalid request payload",
@@ -171,13 +145,12 @@ func ValidateHubAndSKU(db *postgres.DbCluster) gin.HandlerFunc {
 
 		log.Println("parsed request from ValidateHubAndSKU function is: ", request)
 
-		// Now you can access the values using:
+		// Now we can access the values using:
 		// request.SKUID
 		// request.HubID
 
-		// Your validation logic here...
 		var wg sync.WaitGroup
-		respChan := make(chan ValidationResponse, 2)
+		respChan := make(chan models.ValidationResponse, 2)
 
 		// Start hub validation goroutine
 		wg.Add(1)
@@ -186,13 +159,13 @@ func ValidateHubAndSKU(db *postgres.DbCluster) gin.HandlerFunc {
 			var hub models.Hub
 			result := db.GetMasterDB(ctx).First(&hub, request.HubID)
 			if result.Error != nil {
-				respChan <- ValidationResponse{
+				respChan <- models.ValidationResponse{
 					IsValid: false,
 					Error:   fmt.Errorf("hub validation failed: %v", result.Error),
 				}
 				return
 			}
-			respChan <- ValidationResponse{IsValid: true}
+			respChan <- models.ValidationResponse{IsValid: true}
 		}()
 
 		// Start SKU validation goroutine
@@ -202,13 +175,13 @@ func ValidateHubAndSKU(db *postgres.DbCluster) gin.HandlerFunc {
 			var sku models.SKU
 			result := db.GetMasterDB(ctx).First(&sku, request.SKUID)
 			if result.Error != nil {
-				respChan <- ValidationResponse{
+				respChan <- models.ValidationResponse{
 					IsValid: false,
 					Error:   fmt.Errorf("SKU validation failed: %v", result.Error),
 				}
 				return
 			}
-			respChan <- ValidationResponse{IsValid: true}
+			respChan <- models.ValidationResponse{IsValid: true}
 		}()
 
 		// Wait for both goroutines to complete
@@ -218,7 +191,7 @@ func ValidateHubAndSKU(db *postgres.DbCluster) gin.HandlerFunc {
 		}()
 
 		// Process results
-		var finalResponse ValidationResponse
+		var finalResponse models.ValidationResponse
 		finalResponse.IsValid = true
 
 		for resp := range respChan {

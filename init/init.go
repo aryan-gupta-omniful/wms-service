@@ -16,7 +16,6 @@ func Initialize(ctx context.Context) *opostgres.DbCluster {
 	initializeLog(ctx)
 	db := initializeDB(ctx)
 	initializeRedis(ctx)
-	// initializeKafkaProducer(ctx)
 	return db
 }
 
@@ -98,18 +97,3 @@ func initializeRedis(ctx context.Context) {
 	log.InfofWithContext(ctx, "Initialized Redis Client")
 	redis.SetClient(r)
 }
-
-// Initialize Kafka Producer
-// func initializeKafkaProducer(ctx context.Context) {
-// 	kafkaBrokers := config.GetStringSlice(ctx, "onlineKafka.brokers")
-// 	kafkaClientID := config.GetString(ctx, "onlineKafka.clientId")
-// 	kafkaVersion := config.GetString(ctx, "onlineKafka.version")
-
-// 	producer := kafka.NewProducer(
-// 		kafka.WithBrokers(kafkaBrokers),
-// 		kafka.WithClientID(kafkaClientID),
-// 		kafka.WithKafkaVersion(kafkaVersion),
-// 	)
-// 	log.Printf("Initialized Kafka Producer")
-// 	kafka_producer.Set(producer)
-// }

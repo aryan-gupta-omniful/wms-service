@@ -49,19 +49,6 @@ type SKU struct {
 	Dimensions  string `json:"dimensions"`
 }
 
-// type HubInventory struct {
-// 	HubID                 int64 `json:"hub_id"`
-// 	SKUID                 int64 `json:"sku_id"`
-// 	QuantityOfEachProduct int   `json:"quantity_of_each_product"`
-// }
-
-// type HubInventory struct {
-// 	ID                    uint   `gorm:"primary_key"`
-// 	SKUID                 string `gorm:"column:sku_id"`
-// 	HubID                 string `gorm:"column:hub_id"`
-// 	QuantityOfEachProduct int    `gorm:"column:quantity_of_each_product"`
-// }
-
 type Address struct {
 	ID           int64  `json:"id"`
 	EntityID     int64  `json:"entity_id"`
@@ -72,4 +59,14 @@ type Address struct {
 	City         string `json:"city"`
 	State        string `json:"state"`
 	Country      string `json:"country"`
+}
+
+type ValidateOrderRequest struct {
+	SKUID string `json:"sku_id"`
+	HubID string `json:"hub_id"`
+}
+
+type ValidationResponse struct {
+	IsValid bool
+	Error   error
 }

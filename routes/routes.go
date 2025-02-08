@@ -16,12 +16,10 @@ func Initialize(ctx context.Context, s *http.Server, db *postgres.DbCluster) err
 	// API v1 Routes Group
 	v1 := s.Engine.Group("/api/v1")
 	{
-		// Hubs Routes
 		orders := v1.Group("/orders")
 		{
 			orders.POST("/validate_order", controllers.ValidateHubAndSKU(db))
 			orders.POST("/validate_inventory", controllers.ValidateAndUpdateInventory(db))
-
 		}
 
 		hubs := v1.Group("/hubs")
@@ -37,8 +35,6 @@ func Initialize(ctx context.Context, s *http.Server, db *postgres.DbCluster) err
 			skus.GET("/:id", controllers.GetSKUByID(db))
 			skus.POST("", controllers.CreateSKU(db))
 		}
-
-		// Inventory Validation Route
 	}
 
 	log.Infof("Routes initialized successfully")

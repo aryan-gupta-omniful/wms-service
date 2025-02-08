@@ -16,6 +16,13 @@ type ValidateInventoryRequest struct {
 	HubID           string `json:"hub_id"`
 }
 
+type HubInventory struct {
+	ID                    uint   `gorm:"primary_key"`
+	SKUID                 string `gorm:"column:sku_id"`
+	HubID                 string `gorm:"column:hub_id"`
+	QuantityOfEachProduct int    `gorm:"column:quantity_of_each_product"`
+}
+
 func ValidateAndUpdateInventory(db *postgres.DbCluster) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -47,13 +54,6 @@ func ValidateAndUpdateInventory(db *postgres.DbCluster) gin.HandlerFunc {
 
 		ctx.JSON(http.StatusOK, gin.H{"message": "Inventory validation and update successful"})
 	}
-}
-
-type HubInventory struct {
-	ID                    uint   `gorm:"primary_key"`
-	SKUID                 string `gorm:"column:sku_id"`
-	HubID                 string `gorm:"column:hub_id"`
-	QuantityOfEachProduct int    `gorm:"column:quantity_of_each_product"`
 }
 
 func (inventory *HubInventory) ReduceQuantity(db *gorm.DB, quantity int) error {
